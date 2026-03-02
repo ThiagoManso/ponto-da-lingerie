@@ -1,10 +1,7 @@
 // src/services/melhorEnvio.ts
 
-// Em produção, mude para https://www.melhorenvio.com.br
-const BASE_URL = 'https://sandbox.melhorenvio.com.br'; 
-
-// Cole aqui o seu token gerado no painel do Melhor Envio (Ambiente Sandbox)
-const API_TOKEN = 'COLE_SEU_TOKEN_DE_TESTE_AQUI'; 
+const BASE_URL = '/api-melhor-envio';
+const API_TOKEN = import.meta.env.VITE_MELHOR_ENVIO_TOKEN; 
 
 const headers = {
   'Accept': 'application/json',
@@ -16,18 +13,16 @@ const headers = {
 export interface QuoteRequest {
   fromCep: string;
   toCep: string;
-  weight: number; // em kg
-  width: number; // em cm
-  height: number; // em cm
-  length: number; // em cm
+  weight: number;
+  width: number;
+  height: number;
+  length: number;
 }
 
 export const calculateShipping = async (data: QuoteRequest) => {
   try {
-    // Se o token for o placeholder, retorna dados mockados para demonstração
-    if (API_TOKEN === 'COLE_SEU_TOKEN_DE_TESTE_AQUI') {
-      console.log('Usando dados mockados (Token não configurado)');
-      return mockShippingRates();
+    if (!API_TOKEN) {
+      throw new Error('Token do Melhor Envio não configurado nas variáveis de ambiente.');
     }
 
     const response = await fetch(`${BASE_URL}/api/v2/me/shipment/calculate`, {
@@ -45,70 +40,25 @@ export const calculateShipping = async (data: QuoteRequest) => {
       })
     });
     
-    if (!response.ok) throw new Error('Erro ao calcular frete');
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Detalhes do Erro da API Melhor Envio:', errorData);
+        throw new Error(`Falha na API do Melhor Envio: ${response.status}`);
+    }
+    
     return await response.json();
   } catch (error) {
-    console.error('Erro na cotação do Melhor Envio:', error);
-    // Fallback para mock em caso de erro de CORS ou rede no ambiente de teste
-    console.log('Fallback para dados mockados devido a erro de rede/CORS');
-    return mockShippingRates();
+    console.error('Erro na cotação (Sem fallback para mock):', error);
+    throw error; 
   }
 };
 
-const mockShippingRates = () => {
-  return [
-    {
-      id: 1,
-      name: 'PAC',
-      price: '25.50',
-      custom_price: '22.10',
-      discount: '3.40',
-      currency: 'R$',
-      delivery_time: 5,
-      company: {
-        name: 'Correios',
-        picture: 'https://melhorenvio.com.br/images/shipping-companies/correios.png'
-      }
-    },
-    {
-      id: 2,
-      name: 'Sedex',
-      price: '45.00',
-      custom_price: '38.50',
-      discount: '6.50',
-      currency: 'R$',
-      delivery_time: 2,
-      company: {
-        name: 'Correios',
-        picture: 'https://melhorenvio.com.br/images/shipping-companies/correios.png'
-      }
-    },
-    {
-      id: 3,
-      name: 'Jadlog Package',
-      price: '30.00',
-      custom_price: '25.00',
-      discount: '5.00',
-      currency: 'R$',
-      delivery_time: 4,
-      company: {
-        name: 'Jadlog',
-        picture: 'https://melhorenvio.com.br/images/shipping-companies/jadlog.png'
-      }
-    }
-  ];
-};
-
-// Estrutura base para a compra e impressão da etiqueta
 export const generateLabel = async (rateId: number) => {
-  // Nota: O fluxo completo de compra exige enviar os dados do remetente, destinatário e NF-e/Declaração.
-  // Aqui está a estrutura para adicionar ao carrinho.
   console.log(`Simulando adição da transportadora ${rateId} ao carrinho...`);
   return { success: true, orderId: 'ME-123456' };
 };
 
 export const printLabelMock = async (orderId: string) => {
-  // Na API real, você chamaria /api/v2/me/shipment/print
   console.log(`Simulando impressão da etiqueta ${orderId}...`);
   alert(`Abrindo PDF da etiqueta ${orderId} em nova aba... (Simulação)`);
 };

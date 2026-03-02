@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api-melhor-envio/:path*",
+      "destination": "https://sandbox.melhorenvio.com.br/:path*"
+    }
+  ]
+}
