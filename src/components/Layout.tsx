@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Package, Store, ArrowRightLeft, Menu, X, Bell, PieChart } from 'lucide-react';
+import { LayoutDashboard, Package, Store, ArrowRightLeft, Menu, X, Bell, PieChart, Monitor, CalendarDays, DollarSign, Truck, Settings as SettingsIcon, FileText } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useInventory } from '../context/InventoryContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,13 +11,20 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { visibleModules } = useInventory();
 
   const navItems = [
+    { id: 'pdv', label: 'PDV / Caixa', icon: Monitor },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'produtos', label: 'Produtos', icon: Package },
     { id: 'filiais', label: 'Filiais', icon: Store },
     { id: 'transferencias', label: 'Transferências', icon: ArrowRightLeft },
+    { id: 'roteirizacao', label: 'Logística / Rotas', icon: Truck },
     { id: 'curva-abc', label: 'Curva ABC', icon: PieChart },
+    { id: 'sazonalidades', label: 'Calendário Sazonal', icon: CalendarDays },
+    { id: 'precificacao', label: 'Regras de Preço', icon: DollarSign },
+    { id: 'relatorios', label: 'Relatórios', icon: FileText },
+    { id: 'expedicao', label: 'Expedição / Correios', icon: Truck },
   ];
 
   return (
@@ -44,7 +52,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
         </div>
 
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => {
+          {navItems
+            .filter(item => visibleModules[item.id])
+            .map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
@@ -66,6 +76,24 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               </button>
             );
           })}
+          
+          <div className="pt-4 mt-4 border-t border-slate-200">
+            <button
+              onClick={() => {
+                setActiveTab('configuracoes');
+                setSidebarOpen(false);
+              }}
+              className={clsx(
+                "flex items-center w-full gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-colors",
+                activeTab === 'configuracoes' 
+                  ? "bg-slate-800 text-white" 
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              )}
+            >
+              <SettingsIcon size={18} className={activeTab === 'configuracoes' ? 'text-white' : 'text-slate-400'} />
+              Configurações
+            </button>
+          </div>
         </nav>
       </aside>
 

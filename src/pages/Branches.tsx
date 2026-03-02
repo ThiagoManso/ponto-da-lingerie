@@ -1,15 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { useInventory } from '../context/InventoryContext';
-import { Store, MapPin, Package, ArrowRight, Calendar, TrendingUp, DollarSign } from 'lucide-react';
+import { useInventory, LocationType } from '../context/InventoryContext';
+import { Store, MapPin, Package, ArrowRight, Calendar, TrendingUp, DollarSign, Plus, X } from 'lucide-react';
 import { isAfter, subDays, parseISO } from 'date-fns';
 
 type TimeFilter = '7' | '15' | '30' | '60' | '90' | 'ALL' | 'CUSTOM';
 
 export const Branches: React.FC = () => {
-  const { locations, stock, products, sales } = useInventory();
+  const { locations, stock, products, sales, addLocation } = useInventory();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('30');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newLocation, setNewLocation] = useState({
+    name: '',
+    type: 'FILIAL' as LocationType,
+    address: ''
+  });
 
   const locationStats = useMemo(() => {
     const now = new Date();
@@ -53,6 +59,13 @@ export const Branches: React.FC = () => {
       };
     });
   }, [locations, stock, products, sales, timeFilter, customStartDate, customEndDate]);
+
+  const handleCreateLocation = (e: React.FormEvent) => {
+    e.preventDefault();
+    addLocation(newLocation);
+    setIsModalOpen(false);
+    setNewLocation({ name: '', type: 'FILIAL', address: '' });
+  };
 
   return (
     <div className="space-y-6">
@@ -98,8 +111,11 @@ export const Branches: React.FC = () => {
             </div>
           )}
 
-          <button className="bg-pink-600 border border-transparent text-white hover:bg-pink-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ml-auto">
-            <Store size={18} />
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-pink-600 border border-transparent text-white hover:bg-pink-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ml-auto"
+          >
+            <Plus size={18} />
             <span>Nova Filial</span>
           </button>
         </div>
@@ -118,7 +134,7 @@ export const Branches: React.FC = () => {
                     <h3 className="text-lg font-bold text-slate-900">{loc.name}</h3>
                     <div className="flex items-center gap-1 text-xs font-medium text-slate-500 mt-0.5">
                       <MapPin size={12} />
-                      <span>{loc.type === 'CENTRAL' ? 'Matriz' : 'Loja Física'}</span>
+                      <span className="truncate max-w-[150px]" title={loc.address}>{loc.address}</span>
                     </div>
                   </div>
                 </div>
@@ -176,6 +192,74 @@ export const Branches: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Modal Nova Filial */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-900">Nova Filial</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateLocation} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nome da Filial</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newLocation.name}
+                  onChange={e => setNewLocation({...newLocation, name: e.target.value})}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-pink-500 focus:border-pink-500"
+                  placeholder="Ex: Filial Sul"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                <select 
+                  required
+                  value={newLocation.type}
+                  onChange={e => setNewLocation({...newLocation, type: e.target.value as LocationType})}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-pink-500 focus:border-pink-500"
+                >
+                  <option value="FILIAL">Filial (Loja Física)</option>
+                  <option value="CENTRAL">Central (Matriz/CD)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Endereço Completo</label>
+                <textarea 
+                  required
+                  value={newLocation.address}
+                  onChange={e => setNewLocation({...newLocation, address: e.target.value})}
+                  className="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-pink-500 focus:border-pink-500"
+                  rows={3}
+                  placeholder="Rua, Número, Bairro, Cidade - Estado"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-xl font-medium hover:bg-pink-700 transition-colors shadow-sm"
+                >
+                  Salvar Filial
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

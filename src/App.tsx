@@ -11,6 +11,13 @@ import { Products } from './pages/Products';
 import { Branches } from './pages/Branches';
 import { Transfers } from './pages/Transfers';
 import { AbcCurve } from './pages/AbcCurve';
+import { POS } from './pages/POS';
+import { SeasonalityCalendar } from './pages/SeasonalityCalendar';
+import { PricingSettings } from './pages/PricingSettings';
+import { Routing } from './pages/Routing';
+import { Settings } from './pages/Settings';
+import { Reports } from './pages/Reports';
+import { Shipping } from './pages/Shipping';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -27,6 +34,20 @@ export default function App() {
         return <Transfers />;
       case 'curva-abc':
         return <AbcCurve />;
+      case 'pdv':
+        return <POS />;
+      case 'sazonalidades':
+        return <SeasonalityCalendar />;
+      case 'precificacao':
+        return <PricingSettings />;
+      case 'roteirizacao':
+        return <Routing />;
+      case 'relatorios':
+        return <Reports />;
+      case 'expedicao':
+        return <Shipping />;
+      case 'configuracoes':
+        return <Settings />;
       default:
         return <Dashboard />;
     }

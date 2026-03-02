@@ -12,7 +12,8 @@ export const Transfers: React.FC = () => {
     fromLocationId: '',
     toLocationId: '',
     size: 'M' as Size,
-    quantity: 1
+    quantity: 1,
+    shippingMethod: 'OWN_TRANSPORT' as 'OWN_TRANSPORT' | 'CARRIER'
   });
 
   const suggestions = useMemo(() => generateTransferSuggestions(), [generateTransferSuggestions]);
@@ -21,7 +22,7 @@ export const Transfers: React.FC = () => {
     e.preventDefault();
     createTransfer(newTransfer);
     setIsModalOpen(false);
-    setNewTransfer({ productId: '', fromLocationId: '', toLocationId: '', size: 'M', quantity: 1 });
+    setNewTransfer({ productId: '', fromLocationId: '', toLocationId: '', size: 'M', quantity: 1, shippingMethod: 'OWN_TRANSPORT' });
   };
 
   const handleAcceptSuggestion = (suggestion: TransferSuggestion) => {
@@ -30,7 +31,8 @@ export const Transfers: React.FC = () => {
       fromLocationId: suggestion.fromLocationId,
       toLocationId: suggestion.toLocationId,
       size: suggestion.size,
-      quantity: suggestion.quantity
+      quantity: suggestion.quantity,
+      shippingMethod: 'OWN_TRANSPORT'
     });
   };
 
@@ -41,7 +43,8 @@ export const Transfers: React.FC = () => {
         fromLocationId: suggestion.fromLocationId,
         toLocationId: suggestion.toLocationId,
         size: suggestion.size,
-        quantity: suggestion.quantity
+        quantity: suggestion.quantity,
+        shippingMethod: 'OWN_TRANSPORT'
       });
     });
   };
@@ -288,6 +291,34 @@ export const Transfers: React.FC = () => {
                     onChange={e => setNewTransfer({...newTransfer, quantity: parseInt(e.target.value)})}
                     className="w-full border border-slate-300 rounded-xl px-3 py-2 focus:ring-pink-500 focus:border-pink-500"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Método de Envio</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="shippingMethod"
+                      value="OWN_TRANSPORT"
+                      checked={newTransfer.shippingMethod === 'OWN_TRANSPORT'}
+                      onChange={(e) => setNewTransfer({...newTransfer, shippingMethod: e.target.value as 'OWN_TRANSPORT' | 'CARRIER'})}
+                      className="text-pink-600 focus:ring-pink-500"
+                    />
+                    <span className="text-sm text-slate-700">Transporte Próprio</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="shippingMethod"
+                      value="CARRIER"
+                      checked={newTransfer.shippingMethod === 'CARRIER'}
+                      onChange={(e) => setNewTransfer({...newTransfer, shippingMethod: e.target.value as 'OWN_TRANSPORT' | 'CARRIER'})}
+                      className="text-pink-600 focus:ring-pink-500"
+                    />
+                    <span className="text-sm text-slate-700">Transportadora</span>
+                  </label>
                 </div>
               </div>
 
